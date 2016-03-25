@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../google-map/google-map.html">
 <link rel="import" href="../google-map/google-map-marker.html">
 <link rel="import" href="../google-map/google-map-directions.html">
@@ -8,6 +8,14 @@
 <link rel="import" href="../google-map/google-map-search.html">
 <link rel="import" href="../google-map/google-map-point.html">
 <link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js" type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/locale/pt-br.js" type="text/javascript"></script>
 
 <!--
 An element providing a solution to no problem in particular.
@@ -23,6 +31,7 @@ Example:
 <dom-module id="euacho-rotas">
 
     <template>
+        <style include="iron-flex iron-flex-alignment" />
         <style>
             :host {
                 display: block;
@@ -30,40 +39,119 @@ Example:
             }
             
             google-map {
-                height: 100vh;
-                width: 100vw;
+                height: 95vh;
+                width: 95vw;
+            }
+            
+            .container {
+                max-height: 95vh;
+                max-width: 95vw;
+                overflow-x: auto
+            }
+            
+            .checkboxes {
+                padding: 20px;
+                border-bottom: 1px #B7B7B7 solid;
+            }
+            
+            paper-toggle-button {
+                margin: 10px;
+            }
+            
+            paper-toggle-button.green {
+                --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+                --paper-toggle-button-checked-button-color: var(--paper-green-500);
+                --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+            }
+            
+            paper-toggle-button.red {
+                --paper-toggle-button-checked-bar-color: var(--paper-red-500);
+                --paper-toggle-button-checked-button-color: var(--paper-red-500);
+                --paper-toggle-button-checked-ink-color: var(--paper-red-500);
+            }
+            
+            paper-toggle-button.yellow {
+                --paper-toggle-button-checked-bar-color: var(--paper-yellow-700);
+                --paper-toggle-button-checked-button-color: var(--paper-yellow-700);
+                --paper-toggle-button-checked-ink-color: var(--paper-yellow-700);
+            }
+            
+            .item {
+                padding-left: 20px;
+            }
+            
+            .avatar {
+                display: inline-block;
+                box-sizing: border-box;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+            }
+            
+            .avatar.red {
+                background-color: var(--paper-red-300);
+            }
+            
+            .avatar.green {
+                background-color: var(--paper-green-300);
+            }
+            
+            .avatar.yellow {
+                background-color: var(--paper-yellow-300);
             }
             
             .caption {
-                padding-left: 5px;
-                color: #555555;
+                font-family: 'Roboto', 'Noto', sans-serif;
+                -webkit-font-smoothing: antialiased;
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 20px;
+                color: #737373;
             }
         </style>
 
-        <iron-ajax auto url="https://sheetsu.com/apis/9cf27f14" handle-as="json" on-response="_onAddressResult">
-        </iron-ajax>
+        <iron-ajax auto url="https://sheetsu.com/apis/9cf27f14" handle-as="json" on-response="_onAddressResult"></iron-ajax>
 
-        <paper-checkbox id="hiddenInput" visibility="hidden" focus checked></paper-checkbox>
+        <div class="layout horizontal">
 
-        <template is="dom-repeat" items={{mappedAddresses}} as=address index-as=index>
-            <p>[[address.date]] - [[address.address]]</p>
-        </template>
+            <paper-card class="flex layout vertical container" style="margin-right:5px">
+
+                <div class="layout horizontal center-justified checkboxes">
+                    <paper-toggle-button class="green" checked="{{showNew}}" toggles>Novos</paper-toggle-button>
+                    <paper-toggle-button class="yellow" checked="{{showCurrent}}" toggles>Atenção</paper-toggle-button>
+                    <paper-toggle-button class="red" checked="{{showOld}}" toggles>Antigos</paper-toggle-button>
+                </div>
+                
+                <div class="card-content">
+                    <template is="dom-repeat" items={{addressList}} as=address index-as=index sort="_sortItems" filter="{{_filterItems(showNew, showCurrent, showOld)}}">
+                        <paper-icon-item class="item">
+                            <div class$="{{_iconType(address.date)}}" item-icon></div>
+                            <paper-item-body two-line>
+                                <div>[[address.address]]</div>
+                                <div class="caption" secondary>{{_format(address.date)}} - {{_fromNow(address.date)}}</div>
+                            </paper-item-body>
+                        </paper-icon-item>
+                    </template>
+                </div>
 
 
-        <google-map id="map" mouse-events="true" drag-events="true" map="{{map}}" longitude="-43.2014983" latitude="-22.9847301"
-        zoom="13" api-key="AIzaSyB0eu0GwO-zf1Z5QDzInawmwzr6QyC0gBM">
+            </paper-card>
 
-            <template is="dom-repeat" items={{mappedAddresses}} as=address index-as=index>
-                <google-map-marker latitude="[[address.lat]]" longitude="[[address.lon]]" title="[[address.address]]">
-                    <span>Linha: [[address.address]] :</span>
-                    <span>Data [[address.Date]]</span>
-                </google-map-marker>
-            </template>
+            <google-map class="flex" style="margin-left:5px" id="map" mouse-events="true" drag-events="true" map="{{map}}" longitude="-43.2014983"
+            latitude="-22.9847301" zoom="13" api-key="AIzaSyB0eu0GwO-zf1Z5QDzInawmwzr6QyC0gBM">
 
-        </google-map>
+                <template is="dom-repeat" items={{addressList}} as=address index-as=index filter="{{_filterItems(showNew, showCurrent, showOld)}}">
+                    <google-map-marker icon="{{_computeMapIcon(address.date)}}" latitude="[[address.lat]]" longitude="[[address.lon]]">
+                        <span>[[address.address]] :</span>
+                        <br/>
+                        <span>[[address.date]]</span>
+                    </google-map-marker>
+                </template>
 
-        <google-map-search id="mapsearch" map="[[map]]" on-google-map-search-results="_onMapSearchResult"></google-map-search>
+            </google-map>
 
+            <google-map-search id="mapsearch" map="[[map]]" on-google-map-search-results="_onMapSearchResult"></google-map-search>
+        </div>
     </template>
 
     <script>
@@ -72,18 +160,27 @@ Example:
 
              properties: {
 
-                addresses: { 
+                addressList: { 
                     type: Array,
+                    notify:true,
                     value: function () { 
-                        return [ {  }, ] 
+                        return [ ] 
                     } 
                 },
                 
-                mappedAddresses : { 
-                    type: Array,
-                    value: function () { 
-                        return [ {  }, ] 
-                    } 
+                showNew:{
+                    type: Boolean,
+                    value: true,
+                },
+                
+                showCurrent:{
+                    type: Boolean,
+                    value: true,
+                },
+                
+                showOld:{
+                    type: Boolean,
+                    value: true,
                 },
              },
             // Element Lifecycle
@@ -113,14 +210,79 @@ Example:
                 // Use this to clean up anything you did in `attached`.
             },
             
+            _computeMapIcon : function(date){
+               
+                var diff = date.diff(moment(), 'days');
+                if(diff < -7)
+                    return '../img/marker_r.png';    
+                if(diff <= 0)
+                    return '../img/marker_y.png';
+                return '../img/marker_g.png';
+            },
+            
+            _fromNow: function(date){
+                return date.fromNow();
+            },
+            
+            _format: function(date){
+              return date.format('DD/MM/YYYY')  
+            },
+            
+            _iconType: function(date){
+                
+                var diff = date.diff(moment(), 'days');
+                
+                if(diff < -7)
+                    return 'avatar red';    
+                if(diff <= 0)
+                    return 'avatar yellow';
+                return 'avatar green';
+            },
+            
+            _sortItems: function(a, b){
+                 return a.date.diff(b.date);
+            },
+            
+            _filterItems: function(n, c, o){
+                console.log(n,c,o);
+                
+                return function(item) {
+                    var date = item.date;
+                    var diff = date.diff(moment(), 'days');
+                    
+                    if(diff < -7 && o)
+                        return true;    
+                    else if(diff <= 0 && diff > -7 && c)
+                        return true;
+                    else if(diff > 0 && n)
+                        return true;
+                        
+                    return false;
+                    
+                };
+            },
+            
             _onAddressResult: function (e) {
-                var res = e.detail.xhr.response.result;
-                this.set('addresses', res);
+                var res = e.detail.xhr.response.result.reduce(function(prev, curr){
+                    
+                    if(curr.Entregue.toLowerCase() != 'sim'){                        
+                        var data = {
+                            date : moment(curr.Data, 'DD/MM/YYYY'),
+                            address : curr.Endereço,
+                            mapped: false
+                        }
+                        
+                        prev.push(data);
+                    }
+                    
+                    return prev;
+                }, []);
+                this.set('addressList', res);
                 this._doMapSearch();
             },
             
             _doMapSearch : function(){
-                var address = this.addresses[0];
+                var address = this.addressList.filter(function(x){return !x.mapped})[0];
                 if(address){
                     this.$.mapsearch.query = address.address; 
                 }
@@ -129,18 +291,12 @@ Example:
             _onMapSearchResult : function(e){
                 
                 var result = e.detail[0];
-                var query = this.$.mapsearch.query;
-                var address = this.addresses[0];
+                var index = this.addressList.findIndex(function(x){return !x.mapped});
                 
-                if(address){
-                    
-                    address.lat = result.latitude;
-                    address.lon = result.longitude;
-                    
-                    this.push('mappedAddresses', address);
-                    this.splice('addresses', 0, 1);
-                    
-                    console.log(this.mappedAddresses);
+                if(index > -1){
+                    this.set('addressList.'+ index +'.lat', result.latitude);
+                    this.set('addressList.'+ index +'.lon', result.longitude);
+                    this.set('addressList.'+ index +'.mapped', true);
                 }
                 this._doMapSearch();
             },
