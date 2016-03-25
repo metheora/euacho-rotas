@@ -1,0 +1,151 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../google-map/google-map.html">
+<link rel="import" href="../google-map/google-map-marker.html">
+<link rel="import" href="../google-map/google-map-directions.html">
+<link rel="import" href="../google-map/google-map-poly.html">
+<link rel="import" href="../google-map/google-map-search.html">
+<link rel="import" href="../google-map/google-map-point.html">
+<link rel="import" href="../paper-slider/paper-slider.html">
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <euacho-rotas></euacho-rotas>
+
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<dom-module id="euacho-rotas">
+
+    <template>
+        <style>
+            :host {
+                display: block;
+                box-sizing: border-box;
+            }
+            
+            google-map {
+                height: 100vh;
+                width: 100vw;
+            }
+            
+            .caption {
+                padding-left: 5px;
+                color: #555555;
+            }
+        </style>
+
+        <iron-ajax auto url="https://sheetsu.com/apis/9cf27f14" handle-as="json" on-response="_onAddressResult">
+        </iron-ajax>
+
+        <paper-checkbox id="hiddenInput" visibility="hidden" focus checked></paper-checkbox>
+
+        <template is="dom-repeat" items={{mappedAddresses}} as=address index-as=index>
+            <p>[[address.date]] - [[address.address]]</p>
+        </template>
+
+
+        <google-map id="map" mouse-events="true" drag-events="true" map="{{map}}" longitude="-43.2014983" latitude="-22.9847301"
+        zoom="13" api-key="AIzaSyB0eu0GwO-zf1Z5QDzInawmwzr6QyC0gBM">
+
+            <template is="dom-repeat" items={{mappedAddresses}} as=address index-as=index>
+                <google-map-marker latitude="[[address.lat]]" longitude="[[address.lon]]" title="[[address.address]]">
+                    <span>Linha: [[address.address]] :</span>
+                    <span>Data [[address.Date]]</span>
+                </google-map-marker>
+            </template>
+
+        </google-map>
+
+        <google-map-search id="mapsearch" map="[[map]]" on-google-map-search-results="_onMapSearchResult"></google-map-search>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'euacho-rotas',
+
+             properties: {
+
+                addresses: { 
+                    type: Array,
+                    value: function () { 
+                        return [ {  }, ] 
+                    } 
+                },
+                
+                mappedAddresses : { 
+                    type: Array,
+                    value: function () { 
+                        return [ {  }, ] 
+                    } 
+                },
+             },
+            // Element Lifecycle
+
+            ready: function () {
+                // `ready` is called after all elements have been configured, but
+                // propagates bottom-up. This element's children are ready, but parents
+                // are not.
+                //
+                // This is the point where you should make modifications to the DOM (when
+                // necessary), or kick off any processes the element wants to perform.
+            },
+
+            attached: function () {
+                // `attached` fires once the element and its parents have been inserted
+                // into a document.
+                //
+                // This is a good place to perform any work related to your element's
+                // visual state or active behavior (measuring sizes, beginning animations,
+                // loading resources, etc).
+            },
+
+            detached: function () {
+                // The analog to `attached`, `detached` fires when the element has been
+                // removed from a document.
+                //
+                // Use this to clean up anything you did in `attached`.
+            },
+            
+            _onAddressResult: function (e) {
+                var res = e.detail.xhr.response.result;
+                this.set('addresses', res);
+                this._doMapSearch();
+            },
+            
+            _doMapSearch : function(){
+                var address = this.addresses[0];
+                if(address){
+                    this.$.mapsearch.query = address.address; 
+                }
+            },
+            
+            _onMapSearchResult : function(e){
+                
+                var result = e.detail[0];
+                var query = this.$.mapsearch.query;
+                var address = this.addresses[0];
+                
+                if(address){
+                    
+                    address.lat = result.latitude;
+                    address.lon = result.longitude;
+                    
+                    this.push('mappedAddresses', address);
+                    this.splice('addresses', 0, 1);
+                    
+                    console.log(this.mappedAddresses);
+                }
+                this._doMapSearch();
+            },
+            
+        });
+    </script>
+
+</dom-module>
