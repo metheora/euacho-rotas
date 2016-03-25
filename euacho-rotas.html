@@ -212,12 +212,15 @@ Example:
             
             _computeMapIcon : function(date){
                
+               _computeMapIcon : function(date){
+               
                 var diff = date.diff(moment(), 'days');
                 if(diff < -7)
-                    return '../img/marker_r.png';    
+                    return this.resolveUrl('img/marker_r.png');    
                 if(diff <= 0)
-                    return '../img/marker_y.png';
-                return '../img/marker_g.png';
+                    return this.resolveUrl('img/marker_y.png');
+                return this.resolveUrl('img/marker_g.png');
+            },
             },
             
             _fromNow: function(date){
