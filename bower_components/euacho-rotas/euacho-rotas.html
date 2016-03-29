@@ -64,16 +64,22 @@ Example:
                 --paper-toggle-button-checked-ink-color: var(--paper-green-500);
             }
             
+            paper-toggle-button.gray {
+                --paper-toggle-button-checked-bar-color: var(--paper-blue-grey-500);
+                --paper-toggle-button-checked-button-color: var(--paper-blue-grey-500);
+                --paper-toggle-button-checked-ink-color: var(--paper-blue-grey-500);
+            }
+            
+            paper-toggle-button.yellow {
+                --paper-toggle-button-checked-bar-color: var(--paper-yellow-500);
+                --paper-toggle-button-checked-button-color: var(--paper-yellow-500);
+                --paper-toggle-button-checked-ink-color: var(--paper-yellow-500);
+            }
+            
             paper-toggle-button.red {
                 --paper-toggle-button-checked-bar-color: var(--paper-red-500);
                 --paper-toggle-button-checked-button-color: var(--paper-red-500);
                 --paper-toggle-button-checked-ink-color: var(--paper-red-500);
-            }
-            
-            paper-toggle-button.yellow {
-                --paper-toggle-button-checked-bar-color: var(--paper-yellow-700);
-                --paper-toggle-button-checked-button-color: var(--paper-yellow-700);
-                --paper-toggle-button-checked-ink-color: var(--paper-yellow-700);
             }
             
             .item {
@@ -88,16 +94,20 @@ Example:
                 border-radius: 50%;
             }
             
-            .avatar.red {
-                background-color: var(--paper-red-300);
-            }
-            
             .avatar.green {
                 background-color: var(--paper-green-300);
             }
             
+            .avatar.gray {
+                background-color: var(--paper-blue-grey-500);
+            }
+            
             .avatar.yellow {
                 background-color: var(--paper-yellow-300);
+            }
+            
+            .avatar.red {
+                background-color: var(--paper-red-300);
             }
             
             .caption {
@@ -117,13 +127,14 @@ Example:
             <paper-card class="flex layout vertical container" style="margin-right:5px">
 
                 <div class="layout horizontal center-justified checkboxes">
-                    <paper-toggle-button class="green" checked="{{showNew}}" toggles>Novos</paper-toggle-button>
-                    <paper-toggle-button class="yellow" checked="{{showCurrent}}" toggles>Atenção</paper-toggle-button>
+                    <paper-toggle-button class="gray" checked="{{showNew}}" toggles>Novos</paper-toggle-button>
+                    <paper-toggle-button class="green" checked="{{showInTime}}" toggles>No prazo</paper-toggle-button>
+                    <paper-toggle-button class="yellow" checked="{{showAtention}}" toggles>Atenção</paper-toggle-button>
                     <paper-toggle-button class="red" checked="{{showOld}}" toggles>Antigos</paper-toggle-button>
                 </div>
-                
+
                 <div class="card-content">
-                    <template is="dom-repeat" items={{addressList}} as=address index-as=index sort="_sortItems" filter="{{_filterItems(showNew, showCurrent, showOld)}}">
+                    <template is="dom-repeat" items={{addressList}} as=address index-as=index sort="_sortItems" filter="{{_filterItems(showNew, showInTime, showAtention, showOld)}}">
                         <paper-icon-item class="item">
                             <div class$="{{_iconType(address.date)}}" item-icon></div>
                             <paper-item-body two-line>
@@ -140,7 +151,7 @@ Example:
             <google-map class="flex" style="margin-left:5px" id="map" mouse-events="true" drag-events="true" map="{{map}}" longitude="-43.2014983"
             latitude="-22.9847301" zoom="13" api-key="AIzaSyB0eu0GwO-zf1Z5QDzInawmwzr6QyC0gBM">
 
-                <template is="dom-repeat" items={{addressList}} as=address index-as=index filter="{{_filterItems(showNew, showCurrent, showOld)}}">
+                <template is="dom-repeat" items={{addressList}} as=address index-as=index filter="{{_filterItems(showNew, showInTime, showAtention, showOld)}}">
                     <google-map-marker icon="{{_computeMapIcon(address.date)}}" latitude="[[address.lat]]" longitude="[[address.lon]]">
                         <span>[[address.address]] :</span>
                         <br/>
@@ -173,7 +184,12 @@ Example:
                     value: true,
                 },
                 
-                showCurrent:{
+                showAtention:{
+                    type: Boolean,
+                    value: true,
+                },
+                
+                showInTime:{
                     type: Boolean,
                     value: true,
                 },
@@ -213,11 +229,15 @@ Example:
             _computeMapIcon : function(date){
                
                 var diff = date.diff(moment(), 'days');
-                if(diff < -7)
+                
+                if(diff <= -10)
                     return this.resolveUrl('img/marker_r.png');    
-                if(diff <= 0)
+                if(diff <= -7)
                     return this.resolveUrl('img/marker_y.png');
-                return this.resolveUrl('img/marker_g.png');
+                if(diff <= -3)
+                    return this.resolveUrl('img/marker_g.png');
+                    
+                return this.resolveUrl('img/marker_g2.png');
             },
             
             _fromNow: function(date){
@@ -231,30 +251,36 @@ Example:
             _iconType: function(date){
                 
                 var diff = date.diff(moment(), 'days');
-                
-                if(diff < -7)
+                console.log(diff);
+                if(diff <= -10)
                     return 'avatar red';    
-                if(diff <= 0)
+                else if(diff <= -7)
                     return 'avatar yellow';
-                return 'avatar green';
+                else if(diff <= -3)
+                    return 'avatar green';
+                    
+                return 'avatar gray';
             },
             
             _sortItems: function(a, b){
                  return a.date.diff(b.date);
             },
             
-            _filterItems: function(n, c, o){
-                console.log(n,c,o);
+            _filterItems: function(newRoute, inTimeRoute, atentionRoute, oldRoute){
+                
+                console.log(newRoute, inTimeRoute, atentionRoute,oldRoute);
                 
                 return function(item) {
                     var date = item.date;
                     var diff = date.diff(moment(), 'days');
                     
-                    if(diff < -7 && o)
+                    if(diff <= -10 && oldRoute)
                         return true;    
-                    else if(diff <= 0 && diff > -7 && c)
+                    else if(diff <= -7 && diff > -10 && atentionRoute)
                         return true;
-                    else if(diff > 0 && n)
+                    else if(diff <= -3 && diff > -7 && inTimeRoute)
+                        return true;
+                    if(diff > -3 && newRoute)
                         return true;
                         
                     return false;

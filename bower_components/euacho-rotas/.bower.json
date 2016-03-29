@@ -30,11 +30,11 @@
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0"
   },
-  "_release": "94daee12ed",
+  "_release": "280e3074a5",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "94daee12ed4b96acd0eafe5fe6d70bf062b8055f"
+    "commit": "280e3074a55df08944aa6ce049663e1894d3427a"
   },
   "_source": "https://github.com/metheora/euacho-rotas.git",
   "_target": "*",
