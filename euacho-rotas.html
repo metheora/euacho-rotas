@@ -127,8 +127,8 @@ Example:
             <paper-card class="flex layout vertical container" style="margin-right:5px">
 
                 <div class="layout horizontal center-justified checkboxes">
-                    <paper-toggle-button class="green" checked="{{showNew}}" toggles>Novos</paper-toggle-button>
-                    <paper-toggle-button class="gray" checked="{{showInTime}}" toggles>No prazo</paper-toggle-button>
+                    <paper-toggle-button class="gray" checked="{{showNew}}" toggles>Novos</paper-toggle-button>
+                    <paper-toggle-button class="green" checked="{{showInTime}}" toggles>No prazo</paper-toggle-button>
                     <paper-toggle-button class="yellow" checked="{{showAtention}}" toggles>Atenção</paper-toggle-button>
                     <paper-toggle-button class="red" checked="{{showOld}}" toggles>Antigos</paper-toggle-button>
                 </div>
@@ -151,7 +151,7 @@ Example:
             <google-map class="flex" style="margin-left:5px" id="map" mouse-events="true" drag-events="true" map="{{map}}" longitude="-43.2014983"
             latitude="-22.9847301" zoom="13" api-key="AIzaSyB0eu0GwO-zf1Z5QDzInawmwzr6QyC0gBM">
 
-                <template is="dom-repeat" items={{addressList}} as=address index-as=index filter="{{_filterItems(showNew, showCurrent, showOld)}}">
+                <template is="dom-repeat" items={{addressList}} as=address index-as=index filter="{{_filterItems(showNew, showInTime, showAtention, showOld)}}">
                     <google-map-marker icon="{{_computeMapIcon(address.date)}}" latitude="[[address.lat]]" longitude="[[address.lon]]">
                         <span>[[address.address]] :</span>
                         <br/>
@@ -230,14 +230,14 @@ Example:
                
                 var diff = date.diff(moment(), 'days');
                 
-                if(diff < -7)
+                if(diff <= -10)
                     return this.resolveUrl('img/marker_r.png');    
-                if(diff < -3)
+                if(diff <= -7)
                     return this.resolveUrl('img/marker_y.png');
-                if(diff <= 0)
-                    return this.resolveUrl('img/marker_g2.png');
+                if(diff <= -3)
+                    return this.resolveUrl('img/marker_g.png');
                     
-                return this.resolveUrl('img/marker_g.png');
+                return this.resolveUrl('img/marker_g2.png');
             },
             
             _fromNow: function(date){
@@ -251,15 +251,15 @@ Example:
             _iconType: function(date){
                 
                 var diff = date.diff(moment(), 'days');
-                
-                if(diff < -7)
+                console.log(diff);
+                if(diff <= -10)
                     return 'avatar red';    
-                if(diff < -3)
+                else if(diff <= -7)
                     return 'avatar yellow';
-                if(diff <= 0)
-                    return 'avatar gray';
+                else if(diff <= -3)
+                    return 'avatar green';
                     
-                return 'avatar green';
+                return 'avatar gray';
             },
             
             _sortItems: function(a, b){
@@ -274,13 +274,13 @@ Example:
                     var date = item.date;
                     var diff = date.diff(moment(), 'days');
                     
-                    if(diff < -7 && oldRoute)
+                    if(diff <= -10 && oldRoute)
                         return true;    
-                    else if(diff < -3 && diff >= -7 && atentionRoute)
+                    else if(diff <= -7 && diff > -10 && atentionRoute)
                         return true;
-                    else if(diff <= 0 && diff >= -3 && inTimeRoute)
+                    else if(diff <= -3 && diff > -7 && inTimeRoute)
                         return true;
-                    if(diff > 0 && newRoute)
+                    if(diff > -3 && newRoute)
                         return true;
                         
                     return false;
