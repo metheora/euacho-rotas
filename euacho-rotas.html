@@ -64,16 +64,22 @@ Example:
                 --paper-toggle-button-checked-ink-color: var(--paper-green-500);
             }
             
+            paper-toggle-button.gray {
+                --paper-toggle-button-checked-bar-color: var(--paper-blue-grey-500);
+                --paper-toggle-button-checked-button-color: var(--paper-blue-grey-500);
+                --paper-toggle-button-checked-ink-color: var(--paper-blue-grey-500);
+            }
+            
+            paper-toggle-button.yellow {
+                --paper-toggle-button-checked-bar-color: var(--paper-yellow-500);
+                --paper-toggle-button-checked-button-color: var(--paper-yellow-500);
+                --paper-toggle-button-checked-ink-color: var(--paper-yellow-500);
+            }
+            
             paper-toggle-button.red {
                 --paper-toggle-button-checked-bar-color: var(--paper-red-500);
                 --paper-toggle-button-checked-button-color: var(--paper-red-500);
                 --paper-toggle-button-checked-ink-color: var(--paper-red-500);
-            }
-            
-            paper-toggle-button.yellow {
-                --paper-toggle-button-checked-bar-color: var(--paper-yellow-700);
-                --paper-toggle-button-checked-button-color: var(--paper-yellow-700);
-                --paper-toggle-button-checked-ink-color: var(--paper-yellow-700);
             }
             
             .item {
@@ -88,16 +94,20 @@ Example:
                 border-radius: 50%;
             }
             
-            .avatar.red {
-                background-color: var(--paper-red-300);
-            }
-            
             .avatar.green {
                 background-color: var(--paper-green-300);
             }
             
+            .avatar.gray {
+                background-color: var(--paper-blue-grey-500);
+            }
+            
             .avatar.yellow {
                 background-color: var(--paper-yellow-300);
+            }
+            
+            .avatar.red {
+                background-color: var(--paper-red-300);
             }
             
             .caption {
@@ -118,12 +128,13 @@ Example:
 
                 <div class="layout horizontal center-justified checkboxes">
                     <paper-toggle-button class="green" checked="{{showNew}}" toggles>Novos</paper-toggle-button>
-                    <paper-toggle-button class="yellow" checked="{{showCurrent}}" toggles>Atenção</paper-toggle-button>
+                    <paper-toggle-button class="gray" checked="{{showInTime}}" toggles>No prazo</paper-toggle-button>
+                    <paper-toggle-button class="yellow" checked="{{showAtention}}" toggles>Atenção</paper-toggle-button>
                     <paper-toggle-button class="red" checked="{{showOld}}" toggles>Antigos</paper-toggle-button>
                 </div>
-                
+
                 <div class="card-content">
-                    <template is="dom-repeat" items={{addressList}} as=address index-as=index sort="_sortItems" filter="{{_filterItems(showNew, showCurrent, showOld)}}">
+                    <template is="dom-repeat" items={{addressList}} as=address index-as=index sort="_sortItems" filter="{{_filterItems(showNew, showInTime, showAtention, showOld)}}">
                         <paper-icon-item class="item">
                             <div class$="{{_iconType(address.date)}}" item-icon></div>
                             <paper-item-body two-line>
@@ -173,7 +184,12 @@ Example:
                     value: true,
                 },
                 
-                showCurrent:{
+                showAtention:{
+                    type: Boolean,
+                    value: true,
+                },
+                
+                showInTime:{
                     type: Boolean,
                     value: true,
                 },
@@ -213,10 +229,14 @@ Example:
             _computeMapIcon : function(date){
                
                 var diff = date.diff(moment(), 'days');
+                
                 if(diff < -7)
                     return this.resolveUrl('img/marker_r.png');    
-                if(diff <= 0)
+                if(diff < -3)
                     return this.resolveUrl('img/marker_y.png');
+                if(diff <= 0)
+                    return this.resolveUrl('img/marker_g2.png');
+                    
                 return this.resolveUrl('img/marker_g.png');
             },
             
@@ -234,8 +254,11 @@ Example:
                 
                 if(diff < -7)
                     return 'avatar red';    
-                if(diff <= 0)
+                if(diff < -3)
                     return 'avatar yellow';
+                if(diff <= 0)
+                    return 'avatar gray';
+                    
                 return 'avatar green';
             },
             
@@ -243,18 +266,21 @@ Example:
                  return a.date.diff(b.date);
             },
             
-            _filterItems: function(n, c, o){
-                console.log(n,c,o);
+            _filterItems: function(newRoute, inTimeRoute, atentionRoute, oldRoute){
+                
+                console.log(newRoute, inTimeRoute, atentionRoute,oldRoute);
                 
                 return function(item) {
                     var date = item.date;
                     var diff = date.diff(moment(), 'days');
                     
-                    if(diff < -7 && o)
+                    if(diff < -7 && oldRoute)
                         return true;    
-                    else if(diff <= 0 && diff > -7 && c)
+                    else if(diff < -3 && diff >= -7 && atentionRoute)
                         return true;
-                    else if(diff > 0 && n)
+                    else if(diff <= 0 && diff >= -3 && inTimeRoute)
+                        return true;
+                    if(diff > 0 && newRoute)
                         return true;
                         
                     return false;
